@@ -1,0 +1,47 @@
+project.ext.moduleName = 'ai_project'
+
+allprojects {
+
+    apply plugin: 'java'
+    apply plugin: 'idea'
+    apply plugin: 'eclipse'
+    apply plugin: 'maven'
+    apply plugin: 'project-report'
+
+    project.sourceCompatibility = 1.8
+    project.targetCompatibility = 1.8
+
+    configurations.all {
+        // check for updates every build
+        resolutionStrategy {
+            cacheDynamicVersionsFor 1, 'hours'
+            cacheChangingModulesFor 0, 'seconds'
+        }
+    }
+
+    /*
+     * Starting in Java 8, doclint is strictly enforced, meaning bad Javadocs can actually prevent
+     * a build. This is a dodgy solution for gradle to tell the Java compiler to ignore doclint errors.
+     */
+    if (JavaVersion.current().isJava8Compatible()) {
+        allprojects {
+            tasks.withType(Javadoc) {
+                options.addStringOption('Xdoclint:none', '-quiet')
+            }
+        }
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        //compile project(':game')
+        compile group: 'org.projectlombok', name: 'lombok', version: '1.16.8'
+    }
+}
+
+
+
+
+
