@@ -2,5 +2,11 @@
 
 dependencies {
     //compile project(':game')
-    compile 'org.projectlombok:lombok:1.12.6'
+    //compile 'org.projectlombok:lombok:1.12.6'
+}
+
+idea {
+    module {
+        sourceDirs += file('src')
+    }
 }

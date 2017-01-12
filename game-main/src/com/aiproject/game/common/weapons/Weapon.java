@@ -1,6 +1,7 @@
 package com.aiproject.game.common.weapons;
 
 import com.aiproject.game.common.enums.WeaponType;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 
@@ -8,6 +9,7 @@ import lombok.Data;
  * Created by Cliff on 7/10/2016.
  */
 @Data
+@AllArgsConstructor
 public abstract class Weapon
 {
     private WeaponType weaponType;
