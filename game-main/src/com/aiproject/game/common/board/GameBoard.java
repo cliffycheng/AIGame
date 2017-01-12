@@ -1,7 +1,6 @@
 package com.aiproject.game.common.board;
 
 import com.aiproject.game.common.pieces.Piece;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

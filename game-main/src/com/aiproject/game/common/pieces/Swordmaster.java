@@ -1,6 +1,7 @@
 package com.aiproject.game.common.pieces;
 
 import com.aiproject.game.common.enums.WeaponType;
+import com.aiproject.game.common.weapons.IronSword;
 import lombok.Data;
 
 /**
@@ -17,6 +18,7 @@ public class Swordmaster extends Piece
         setMove(6);
         setSpeed(10);
         setSkill(10);
-        setWeaponType(WeaponType.SWORD);
+        getWeaponType().add(WeaponType.SWORD);
+        getWeapons().add(new IronSword());
     }
 }
