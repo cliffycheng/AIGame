@@ -38,6 +38,8 @@ allprojects {
     dependencies {
         //compile project(':game')
         compile group: 'org.projectlombok', name: 'lombok', version: '1.16.8'
+
+        testCompile 'junit:junit:4.12'
     }
 }
 
