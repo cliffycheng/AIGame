@@ -30,4 +30,10 @@ public class Piece
     private List<WeaponType> weaponType = new ArrayList<>();
     private List<Weapon> weapons = new ArrayList<>();
 
+    // Gets weapon currently in use
+    public Weapon getWeapon()
+    {
+        return weapons.get(0);
+    }
+
 }

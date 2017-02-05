@@ -7,6 +7,15 @@ dependencies {
 
 idea {
     module {
-        sourceDirs += file('src')
+        sourceDirs += file('src/main')
+        sourceDirs += file('src/test')
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+        }
     }
 }
