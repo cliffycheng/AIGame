@@ -1,6 +1,7 @@
 package com.aiproject.game.common;
 
 import com.aiproject.game.common.board.GameBoard;
+import com.aiproject.game.common.board.exceptions.BoardStateException;
 import com.aiproject.game.common.pieces.Swordmaster;
 import com.aiproject.game.common.player.Player;
 
@@ -18,8 +19,14 @@ public class GameRunner
         p1.addPiece(new Swordmaster());
         p2.addPiece(new Swordmaster());
 
-        board.placePiece(p1.getOwnedPieces().get(0), 0, 0);
-        board.placePiece(p2.getOwnedPieces().get(0), 1, 1);
+        try
+        {
+            board.placePiece(p1.getOwnedPieces().get(0), 0, 0);
+            board.placePiece(p2.getOwnedPieces().get(0), 1, 1);
+        }catch(BoardStateException e)
+        {
+            throw new RuntimeException("Failed to initialize board");
+        }
 
 
     }
