@@ -1,5 +1,6 @@
 package com.aiproject.game.common.board;
 
+import com.aiproject.game.common.board.exceptions.BoardStateException;
 import com.aiproject.game.common.pieces.Piece;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,62 +14,49 @@ import java.util.Map;
  */
 public class GameBoard
 {
-    private Piece[][] pieceBoard;
-
-    private Map<Location, Piece> currentPieces;
+    private PieceMap currentPieces;
 
 
     public GameBoard(int x, int y)
     {
-        pieceBoard = new Piece[x][y];
-        currentPieces = new HashMap<>();
+        currentPieces = new PieceMap(x, y);
     }
 
-    public void placePiece(Piece piece, int x, int y)
+    public void placePiece(Piece piece, int x, int y) throws BoardStateException
     {
-        if (pieceBoard[x][y] != null)
+        if (getPiece(x,y) == null)
         {
-            pieceBoard[x][y] = piece;
-            currentPieces.put(new Location(x,y), piece);
+            currentPieces.put(piece, x, y);
         }
         else
         {
-            throw new RuntimeException("Piece already exists at coordinates " + x + " " + y);
+            throw new BoardStateException("Piece already exists at coordinates " + x + " " + y);
         }
     }
 
-    public void movePiece(int x1, int y1, int x2, int y2)
+    public Piece getPiece(int x, int y)
     {
-        if (pieceBoard[x1][y1] != null)
+        return currentPieces.get(x, y);
+    }
+
+    public void movePiece(int x1, int y1, int x2, int y2) throws BoardStateException
+    {
+        if (currentPieces.get(x1,y1) != null)
         {
-            if (pieceBoard[x2][y2] == null)
+            if (currentPieces.get(x2, y2) == null)
             {
-                pieceBoard[x2][y2] = pieceBoard[x1][y1];
-                pieceBoard[x1][y1] = null;
+                currentPieces.movePiece(x1, y1, x2, y2);
             }
-            else throw new RuntimeException("Tried to move a piece to coordinates " + x2 + " " + y2 + "that is occupied");
+            else throw new BoardStateException("Tried to move a piece to coordinates " + x2 + " " + y2 + "that is occupied");
         }
-        else throw new RuntimeException("Tried to move a piece at coordinates " + x1 + " " + y1 + "that does not exist");
+        else throw new BoardStateException("Tried to move a piece at coordinates " + x1 + " " + y1 + "that does not exist");
     }
 
-    public void removePiece(int x, int y)
+    public void removePiece(int x, int y) throws BoardStateException
     {
-        if (pieceBoard[x][y] != null)
+        if(currentPieces.get(x, y) != null)
         {
-            pieceBoard[x][y] = null;
+            currentPieces.remove(x,y);
         }
-        else
-        {
-            throw new RuntimeException("Piece does not exist at coordinates " + x + " " + y);
-        }
-    }
-
-
-    @AllArgsConstructor
-    @Data
-    public class Location
-    {
-        int x;
-        int y;
     }
 }
