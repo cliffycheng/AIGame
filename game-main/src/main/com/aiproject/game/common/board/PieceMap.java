@@ -21,11 +21,19 @@ public class PieceMap
      *
      * Creates nested hashmaps with default capacity appropriate to the sizes
      * given by xLimit and yLimit
+     *
+     * Throws RuntimeException if given limits are bad, as there's no way to proceed
+     * if a bad board is created
      * @param xLimit
      * @param yLimit
      */
     public PieceMap(int xLimit, int yLimit)
     {
+        if (xLimit <= 0 || yLimit <= 0)
+        {
+            throw new RuntimeException("Bad board limits: x:" +xLimit + ", y:" + yLimit);
+        }
+
         map = new HashMap<Integer, Map<Integer, Piece>>(xLimit);
         for (int i = 0; i < yLimit; i++)
         {
@@ -97,14 +105,19 @@ public class PieceMap
     public void movePiece(int x1, int y1, int x2, int y2) throws BoardStateException
     {
         Piece temp = get(x1, y1);
-        Piece other = get(x2, y2);
-        put(other, x1, y1);
+        remove(x1, y1);
         put(temp, x2, y2);
     }
 
     public void remove(int x, int y) throws BoardStateException
     {
-        put(null, x, y);
+        if (x < 0 || x >= xLimit || y < 0 || y >= yLimit)
+        {
+            throw new BoardStateException("Coordinates are out of bounds: x=" + x + ", y=" + y
+                    + " xLimit: " + xLimit + ", yLimit: " + yLimit);
+        }
+
+        map.get(x).put(y, null);
     }
 
 }

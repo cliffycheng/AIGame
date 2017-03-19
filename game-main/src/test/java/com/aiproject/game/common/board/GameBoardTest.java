@@ -1,4 +1,5 @@
-import com.aiproject.game.common.board.GameBoard;
+package com.aiproject.game.common.board;
+
 import com.aiproject.game.common.board.exceptions.BoardStateException;
 import com.aiproject.game.common.pieces.Swordmaster;
 import org.junit.Before;
@@ -24,77 +25,34 @@ public class GameBoardTest
         board = new GameBoard(3,3);
     }
 
+    /**
+     * GameBoard constructor tests
+     */
+
     @Test
-    public void placeTest() throws BoardStateException
+    public void createBadBoardXZero()
     {
-        Swordmaster s = new Swordmaster();
-        board.placePiece(s, 0, 0);
-        assertEquals("Pieces don't match at location 0 0", s, board.getPiece(0, 0));
+        exception.expect(RuntimeException.class);
+        board = new GameBoard(0, 1);
     }
 
     @Test
-    public void placePieceOverPiece() throws BoardStateException
+    public void createBadBoardXNegative()
     {
-
-        Swordmaster s2 = new Swordmaster();
-        board.placePiece(s2, 1, 1);
-
-        exception.expect(BoardStateException.class);
-        Swordmaster s3 = new Swordmaster();
-        board.placePiece(s3, 1, 1);
+        exception.expect(RuntimeException.class);
+        board = new GameBoard(-1, 1);
     }
 
     @Test
-    public void placePieceOutOfBoundsNegativeX() throws BoardStateException
+    public void createBadBoardYZero()
     {
-        Swordmaster s = new Swordmaster();
-
-        exception.expect(BoardStateException.class);
-        board.placePiece(s, -1, 0);
+        exception.expect(RuntimeException.class);
+        board = new GameBoard(1, 0);
     }
-
     @Test
-    public void placePieceOutOfBoundsNegativeY() throws BoardStateException
+    public void createBadBoardYNegative()
     {
-        Swordmaster s = new Swordmaster();
-
-        exception.expect(BoardStateException.class);
-        board.placePiece(s, 0, -1);
-    }
-
-    @Test
-    public void placePieceOutOfBoundsNegativeXAndY() throws BoardStateException
-    {
-        Swordmaster s = new Swordmaster();
-
-        exception.expect(BoardStateException.class);
-        board.placePiece(s, -1, -1);
-    }
-
-    @Test
-    public void placePieceOutOfBoundsOverX() throws BoardStateException
-    {
-        Swordmaster s = new Swordmaster();
-
-        exception.expect(BoardStateException.class);
-        board.placePiece(s, 3, 0);
-    }
-
-    @Test
-    public void placePieceOutOfBoundsOverY() throws BoardStateException
-    {
-        Swordmaster s = new Swordmaster();
-
-        exception.expect(BoardStateException.class);
-        board.placePiece(s, 0, 3);
-    }
-
-    @Test
-    public void placePieceOutOfBoundsOverXAndY() throws BoardStateException
-    {
-        Swordmaster s = new Swordmaster();
-
-        exception.expect(BoardStateException.class);
-        board.placePiece(s, 3, 3);
+        exception.expect(RuntimeException.class);
+        board = new GameBoard(1, -1);
     }
 }
