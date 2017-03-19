@@ -25,6 +25,7 @@ public class Piece
     private int speed;
     private int move;
     private int skill;
+    private String name;
 
     //weapon used
     private List<WeaponType> weaponType = new ArrayList<>();

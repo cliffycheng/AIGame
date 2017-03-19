@@ -10,6 +10,7 @@ import lombok.Data;
 @Data
 public class Swordmaster extends Piece
 {
+
     public Swordmaster()
     {
         setAttack(2);
@@ -20,5 +21,12 @@ public class Swordmaster extends Piece
         setSkill(10);
         getWeaponType().add(WeaponType.SWORD);
         getWeapons().add(new IronSword());
+    }
+
+    public Swordmaster(String name)
+    {
+        this();
+
+        setName(name);
     }
 }
