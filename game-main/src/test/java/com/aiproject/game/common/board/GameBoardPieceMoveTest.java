@@ -2,10 +2,13 @@ package com.aiproject.game.common.board;
 
 import com.aiproject.game.common.board.exceptions.BoardStateException;
 import com.aiproject.game.common.pieces.Swordmaster;
+import com.aiproject.game.pieces.MockPiece;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -162,5 +165,43 @@ public class GameBoardPieceMoveTest
 
         exception.expect(BoardStateException.class);
         board.movePiece(0,0, 4,4);
+    }
+
+    /**
+     *  _ _ _
+     *  _ M _
+     *  _ _ _
+     *
+     *  M = mock piece
+     *  _ = plains terrain (no penalty)
+     *
+     *  getPossibleMoves should give (0, 1), (1, 0), (1, 1), (1, 2), (2, 1)
+     * @throws BoardStateException
+     */
+    @Test
+    public void getPossibleMovesTest() throws BoardStateException
+    {
+        String pieceName = "mock";
+        MockPiece mock = new MockPiece();
+        mock.setName(pieceName);
+        mock.setMove(1);
+
+        board.placePiece(mock, 1, 1);
+
+        Set<Coordinate> possibleMoves = board.getPossibleMoves(pieceName);
+        assertEquals(5, possibleMoves.size());
+
+        assertTrue(possibleMoves.contains(new Coordinate(0,1)));
+        assertTrue(possibleMoves.contains(new Coordinate(1,0)));
+        assertTrue(possibleMoves.contains(new Coordinate(1,0)));
+        assertTrue(possibleMoves.contains(new Coordinate(1,1)));
+        assertTrue(possibleMoves.contains(new Coordinate(1,2)));
+        assertTrue(possibleMoves.contains(new Coordinate(2,1)));
+
+        assertFalse(possibleMoves.contains(new Coordinate(0,0)));
+        assertFalse(possibleMoves.contains(new Coordinate(0,3)));
+        assertFalse(possibleMoves.contains(new Coordinate(2,0)));
+        assertFalse(possibleMoves.contains(new Coordinate(2,2)));
+
     }
 }

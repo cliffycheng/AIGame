@@ -1,14 +1,12 @@
 package com.aiproject.game.common.board;
 
 import com.aiproject.game.common.board.exceptions.BoardStateException;
+import com.aiproject.game.common.board.exceptions.PieceDoesNotExistException;
 import com.aiproject.game.common.pieces.Piece;
 import com.aiproject.game.common.terrain.AbstractTerrain;
 import com.aiproject.game.common.terrain.Plain;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -16,13 +14,22 @@ import java.util.Map;
  */
 public class GameBoard
 {
+    private int xLimit;
+    private int yLimit;
+
     private PieceMap currentPieces;
+    private Map<String, Coordinate> pieceToLocationCache;
+
     private AbstractTerrain[][] terrain;
 
 
     public GameBoard(int x, int y)
     {
+        xLimit = x;
+        yLimit = y;
+
         currentPieces = new PieceMap(x, y);
+        pieceToLocationCache = new HashMap<String, Coordinate>();
         terrain = new AbstractTerrain[x][y];
 
         // fill terrain with default Plain terrain
@@ -40,7 +47,8 @@ public class GameBoard
      */
 
     /**
-     * Place a given piece into board.
+     * Place a given piece into board. Adds piece to the piece-to-location cache to do reverse-lookup
+     * from piece name to location.
      *
      * Throws BoardStateException if attempting to place piece outside of
      * board or placing piece on top of another.
@@ -53,14 +61,18 @@ public class GameBoard
      */
     public void placePiece(Piece piece, int x, int y) throws BoardStateException
     {
-        if (getPiece(x,y) == null)
+        if (pieceToLocationCache.containsKey(piece.getName()))
         {
-            currentPieces.put(piece, x, y);
+            throw new BoardStateException("Piece with name " + piece.getName() + "already exists");
         }
-        else
+
+        if (getPiece(x,y) != null)
         {
             throw new BoardStateException("Piece already exists at coordinates " + x + " " + y);
         }
+
+        currentPieces.put(piece, x, y);
+        pieceToLocationCache.put(piece.getName(), new Coordinate(x,y));
     }
 
     /**
@@ -74,6 +86,22 @@ public class GameBoard
     public Piece getPiece(int x, int y)
     {
         return currentPieces.get(x, y);
+    }
+
+    /**
+     * Returns the piece with the name given. Returns null if no piece
+     * with that name exists.
+     * @param name name of piece to get information for
+     * @return the piece with the given name, or null if piece does not exist
+     */
+    public Piece getPiece(String name)
+    {
+        if (pieceToLocationCache.containsKey(name))
+        {
+            return currentPieces.get(pieceToLocationCache.get(name));
+        }
+
+        return null;
     }
 
     /**
@@ -96,18 +124,148 @@ public class GameBoard
             if (currentPieces.get(x2, y2) == null)
             {
                 currentPieces.movePiece(x1, y1, x2, y2);
+                updatePieceLocation(currentPieces.get(x2, y2).getName(), x2, y2);
             }
             else throw new BoardStateException("Tried to move a piece to coordinates " + x2 + " " + y2 + "that is occupied");
         }
         else throw new BoardStateException("Tried to move a piece at coordinates " + x1 + " " + y1 + "that does not exist");
     }
 
+    public Set<Coordinate> getPossibleMoves(int x, int y) throws BoardStateException
+    {
+        if (currentPieces.get(x, y) != null)
+        {
+            Set<Coordinate> possibleMoves = new HashSet<>();
+            Coordinate coordinate = new Coordinate(x, y);
+            Piece piece = currentPieces.get(coordinate);
+
+            int moves = piece.getMove();
+            getPossibleMovesHelper(possibleMoves, moves, coordinate);
+
+            return possibleMoves;
+        }
+        else
+        {
+            throw new PieceDoesNotExistException("No piece at coordinate (" + x + ", " + y + ")");
+        }
+    }
+
+    public Set<Coordinate> getPossibleMoves(String pieceName) throws BoardStateException
+    {
+
+        if (pieceToLocationCache.containsKey(pieceName))
+        {
+            Set<Coordinate> possibleMoves = new HashSet<>();
+            Coordinate coordinate = pieceToLocationCache.get(pieceName);
+            Piece piece = currentPieces.get(coordinate);
+
+            int moves = piece.getMove();
+            getPossibleMovesHelper(possibleMoves, moves, coordinate);
+
+            return possibleMoves;
+        }
+        else
+        {
+            throw new PieceDoesNotExistException("No piece exists with name " + pieceName);
+        }
+    }
+
+    private void getPossibleMovesHelper(Set<Coordinate> possibleMoves,
+                                        int numMoves,
+                                        Coordinate currentCoor)
+    {
+        possibleMoves.add(currentCoor);
+        if (numMoves <= 0 )
+        {
+            return;
+        }
+        else
+        {
+            attemptMove(possibleMoves, numMoves - 1, currentCoor.up());
+            attemptMove(possibleMoves, numMoves - 1, currentCoor.down());
+            attemptMove(possibleMoves, numMoves - 1, currentCoor.left());
+            attemptMove(possibleMoves, numMoves - 1, currentCoor.right());
+        }
+    }
+
+    private void attemptMove(Set<Coordinate> possibleMoves,
+                             int numMoves,
+                             Coordinate futureCoor)
+    {
+        // If we know this coordinate has been visited before, then don't bother
+        if (possibleMoves.contains(futureCoor))
+        {
+            return;
+        }
+        else
+        {
+            // Check terrain
+            AbstractTerrain t = getTerrain(futureCoor.getX(), futureCoor.getY());
+            // Does terrain have movement penalty?
+            int terrainPenalty = t.getMovePenalty();
+
+            if (numMoves - terrainPenalty >= 0)
+            {
+                possibleMoves.add(futureCoor);
+                getPossibleMovesHelper(possibleMoves, numMoves - terrainPenalty, futureCoor);
+            }
+        }
+    }
+
+    /**
+     * Attempts to move the piece with the given name to coordinate (x,y)
+     * Does validation to make sure the given piece is actually able to move to
+     * the location, based on terrain, piece's move stat, etc
+     *
+     * If piece moves successfully, returns true.
+     *
+     * If piece with this name does not exist, throws PieceDoesNotExistException.
+     * If piece is not able to move to that location, returns false.
+     *
+     * @param name Name of piece to move
+     * @param x
+     * @param y
+     * @return true if move was successful, false if piece was not able to move to given
+     *         coordinates
+     */
+    public boolean movePieceWithValidation(String name, int x, int y) throws BoardStateException
+    {
+        if (pieceToLocationCache.containsKey(name))
+        {
+            return true;
+        }
+        else
+        {
+            throw new PieceDoesNotExistException("No piece exists with name " + name);
+        }
+    }
+
     public void removePiece(int x, int y) throws BoardStateException
     {
         if(currentPieces.get(x, y) != null)
         {
+            Piece piece = currentPieces.get(x, y);
+            pieceToLocationCache.remove(piece.getName());
             currentPieces.remove(x,y);
         }
+    }
+
+    private void updatePieceLocation(String name, int x, int y)
+    {
+        if (pieceToLocationCache.get(name) != null)
+        {
+            Coordinate coor = pieceToLocationCache.get(name);
+            coor.setX(x);
+            coor.setY(y);
+        }
+    }
+
+    /***
+     * BOARD UTILITIES
+     */
+    public boolean isValidCoordinate(Coordinate coor)
+    {
+        return coor.getX() >= 0 && coor.getX() < xLimit && coor.getY() >= 0 && coor.getY() < yLimit;
     }
 
     /***
@@ -122,4 +280,5 @@ public class GameBoard
 
         return terrain[x][y];
     }
+
 }

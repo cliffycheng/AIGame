@@ -94,6 +94,17 @@ public class PieceMap
     }
 
     /**
+     * Get the piece at the given Coordinate. If no piece exists at the given
+     * coordinate, return null.
+     * @param coor coordinates of piece to retrieve
+     * @return
+     */
+    public Piece get(Coordinate coor)
+    {
+        return get(coor.getX(), coor.getY());
+    }
+
+    /**
      * Swaps pieces at position (x1, y1) with the position (x2, y2).
      * Will change board state if piece does not already exist at that place.
      *
