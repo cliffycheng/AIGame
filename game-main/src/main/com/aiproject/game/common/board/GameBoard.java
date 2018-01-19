@@ -201,6 +201,12 @@ public class GameBoard
         {
             // Check terrain
             AbstractTerrain t = getTerrain(futureCoor.getX(), futureCoor.getY());
+
+            if (t == null)
+            {
+                return;
+            }
+
             // Does terrain have movement penalty?
             int terrainPenalty = t.getMovePenalty();
 
@@ -279,6 +285,17 @@ public class GameBoard
         }
 
         return terrain[x][y];
+    }
+
+    public void setTerrain(AbstractTerrain t, int x, int y) throws BoardStateException
+    {
+        if(isValidCoordinate(new Coordinate(x, y)))
+        {
+            terrain[x][y] = t;
+        }
+        else {
+            throw new BoardStateException("Invalid coordinate");
+        }
     }
 
 }

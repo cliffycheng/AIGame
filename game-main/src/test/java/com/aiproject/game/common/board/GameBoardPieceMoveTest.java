@@ -199,9 +199,92 @@ public class GameBoardPieceMoveTest
         assertTrue(possibleMoves.contains(new Coordinate(2,1)));
 
         assertFalse(possibleMoves.contains(new Coordinate(0,0)));
-        assertFalse(possibleMoves.contains(new Coordinate(0,3)));
+        assertFalse(possibleMoves.contains(new Coordinate(0,2)));
         assertFalse(possibleMoves.contains(new Coordinate(2,0)));
         assertFalse(possibleMoves.contains(new Coordinate(2,2)));
 
+    }
+
+    /**
+     *  _ _ _
+     *  _ M _
+     *  _ _ _
+     *
+     *  M = mock piece
+     *  _ = plains terrain (no penalty)
+     *
+     *  2 move spaces allowed, should not try to add positions off the board
+     *  Should not try to report multiple instances of the same space, ie report position (1,1) twice
+     *  (one for zero spaces moved and one for 2 spaces moved
+     *
+     *  getPossibleMoves should allow piece to move on the whole board
+     * @throws BoardStateException
+     */
+    @Test
+    public void getPossibleMovesTest_2Moves() throws BoardStateException
+    {
+        String pieceName = "mock";
+        MockPiece mock = new MockPiece();
+        mock.setName(pieceName);
+        mock.setMove(2);
+
+        board.placePiece(mock, 1, 1);
+
+        Set<Coordinate> possibleMoves = board.getPossibleMoves(pieceName);
+        assertEquals(9, possibleMoves.size());
+
+        assertTrue(possibleMoves.contains(new Coordinate(0,1)));
+        assertTrue(possibleMoves.contains(new Coordinate(1,0)));
+        assertTrue(possibleMoves.contains(new Coordinate(1,0)));
+        assertTrue(possibleMoves.contains(new Coordinate(1,1)));
+        assertTrue(possibleMoves.contains(new Coordinate(1,2)));
+        assertTrue(possibleMoves.contains(new Coordinate(2,1)));
+
+        // The corners of the board that are unreachable in just one move
+        assertTrue(possibleMoves.contains(new Coordinate(0,0)));
+        assertTrue(possibleMoves.contains(new Coordinate(0,2)));
+        assertTrue(possibleMoves.contains(new Coordinate(2,0)));
+        assertTrue(possibleMoves.contains(new Coordinate(2,2)));
+    }
+
+    /**
+     *  F F F
+     *  F M F
+     *  F F F
+     *
+     *  M = mock piece (on Plains terrain, no move penalty)
+     *  F = plains terrain (1 move penalty)
+     *
+     *  2 move spaces allowed. Piece should only be allowed to move onto the forests
+     *  directly north, south, east, and west, or to stay on current spot
+     *
+     * @throws BoardStateException
+     */
+    @Test
+    public void getPossibleMovesTest_2Moves_Terrain() throws BoardStateException
+    {
+        String pieceName = "mock";
+        MockPiece mock = new MockPiece();
+        mock.setName(pieceName);
+        mock.setMove(2);
+
+        // Set up terrain
+        board.placePiece(mock, 1, 1);
+
+        Set<Coordinate> possibleMoves = board.getPossibleMoves(pieceName);
+        assertEquals(9, possibleMoves.size());
+
+        assertTrue(possibleMoves.contains(new Coordinate(0,1)));
+        assertTrue(possibleMoves.contains(new Coordinate(1,0)));
+        assertTrue(possibleMoves.contains(new Coordinate(1,0)));
+        assertTrue(possibleMoves.contains(new Coordinate(1,1)));
+        assertTrue(possibleMoves.contains(new Coordinate(1,2)));
+        assertTrue(possibleMoves.contains(new Coordinate(2,1)));
+
+        // The corners of the board that are unreachable in just one move
+        assertTrue(possibleMoves.contains(new Coordinate(0,0)));
+        assertTrue(possibleMoves.contains(new Coordinate(0,2)));
+        assertTrue(possibleMoves.contains(new Coordinate(2,0)));
+        assertTrue(possibleMoves.contains(new Coordinate(2,2)));
     }
 }
