@@ -1,6 +1,7 @@
 package com.aiproject.game.common.board;
 
 import com.aiproject.game.common.board.exceptions.BoardStateException;
+import com.aiproject.game.common.terrain.Forest;
 import com.aiproject.game.common.pieces.Swordmaster;
 import com.aiproject.game.pieces.MockPiece;
 import org.junit.Before;
@@ -213,6 +214,48 @@ public class GameBoardPieceMoveTest
      *  M = mock piece
      *  _ = plains terrain (no penalty)
      *
+     *  Starting piece is on a forest
+     *
+     *  getPossibleMoves should give (0, 1), (1, 0), (1, 1), (1, 2), (2, 1).
+     *  Starting on a forest should not incur a movement penalty
+     * @throws BoardStateException
+     */
+    @Test
+    public void getPossibleMovesTest_Forest_Starting() throws BoardStateException
+    {
+        String pieceName = "mock";
+        MockPiece mock = new MockPiece();
+        mock.setName(pieceName);
+        mock.setMove(1);
+
+        board.setTerrain(new Forest(), 1, 1);
+        board.placePiece(mock, 1, 1);
+
+        Set<Coordinate> possibleMoves = board.getPossibleMoves(pieceName);
+        assertEquals(5, possibleMoves.size());
+
+        assertTrue(possibleMoves.contains(new Coordinate(0,1)));
+        assertTrue(possibleMoves.contains(new Coordinate(1,0)));
+        assertTrue(possibleMoves.contains(new Coordinate(1,0)));
+        assertTrue(possibleMoves.contains(new Coordinate(1,1)));
+        assertTrue(possibleMoves.contains(new Coordinate(1,2)));
+        assertTrue(possibleMoves.contains(new Coordinate(2,1)));
+
+        assertFalse(possibleMoves.contains(new Coordinate(0,0)));
+        assertFalse(possibleMoves.contains(new Coordinate(0,2)));
+        assertFalse(possibleMoves.contains(new Coordinate(2,0)));
+        assertFalse(possibleMoves.contains(new Coordinate(2,2)));
+
+    }
+
+    /**
+     *  _ _ _
+     *  _ M _
+     *  _ _ _
+     *
+     *  M = mock piece
+     *  _ = plains terrain (no penalty)
+     *
      *  2 move spaces allowed, should not try to add positions off the board
      *  Should not try to report multiple instances of the same space, ie report position (1,1) twice
      *  (one for zero spaces moved and one for 2 spaces moved
@@ -255,13 +298,63 @@ public class GameBoardPieceMoveTest
      *  M = mock piece (on Plains terrain, no move penalty)
      *  F = plains terrain (1 move penalty)
      *
+     *  1 move allowed. Piece should not be able to move because
+     *  move penalty by the forest terrain should prevent any moves.
+     *
+     * @throws BoardStateException
+     */
+    @Test
+    public void getPossibleMovesTest_Forest_1Move() throws BoardStateException
+    {
+        String pieceName = "mock";
+        MockPiece mock = new MockPiece();
+        mock.setName(pieceName);
+        mock.setMove(1);
+
+        // Set up terrain
+        board.setTerrain(new Forest(), 0, 0);
+        board.setTerrain(new Forest(), 0, 1);
+        board.setTerrain(new Forest(), 0, 2);
+        board.setTerrain(new Forest(), 1, 0);
+        board.setTerrain(new Forest(), 1, 1);
+        board.setTerrain(new Forest(), 1, 2);
+        board.setTerrain(new Forest(), 2, 0);
+        board.setTerrain(new Forest(), 2, 1);
+        board.setTerrain(new Forest(), 2, 2);
+
+        board.placePiece(mock, 1, 1);
+
+        Set<Coordinate> possibleMoves = board.getPossibleMoves(pieceName);
+        assertEquals(1, possibleMoves.size());
+
+        // The only valid move should be to stay in place
+        assertTrue(possibleMoves.contains(new Coordinate(1,1)));
+
+        assertFalse(possibleMoves.contains(new Coordinate(0,0)));
+        assertFalse(possibleMoves.contains(new Coordinate(0,1)));
+        assertFalse(possibleMoves.contains(new Coordinate(0,2)));
+        assertFalse(possibleMoves.contains(new Coordinate(1,0)));
+        assertFalse(possibleMoves.contains(new Coordinate(1,2)));
+        assertFalse(possibleMoves.contains(new Coordinate(2,0)));
+        assertFalse(possibleMoves.contains(new Coordinate(2,1)));
+        assertFalse(possibleMoves.contains(new Coordinate(2,2)));
+    }
+
+    /**
+     *  F F F
+     *  F M F
+     *  F F F
+     *
+     *  M = mock piece (on Plains terrain, no move penalty)
+     *  F = plains terrain (1 move penalty)
+     *
      *  2 move spaces allowed. Piece should only be allowed to move onto the forests
      *  directly north, south, east, and west, or to stay on current spot
      *
      * @throws BoardStateException
      */
     @Test
-    public void getPossibleMovesTest_2Moves_Terrain() throws BoardStateException
+    public void getPossibleMovesTest_Forest_All_2Moves() throws BoardStateException
     {
         String pieceName = "mock";
         MockPiece mock = new MockPiece();
@@ -269,22 +362,79 @@ public class GameBoardPieceMoveTest
         mock.setMove(2);
 
         // Set up terrain
+        board.setTerrain(new Forest(), 0, 0);
+        board.setTerrain(new Forest(), 0, 1);
+        board.setTerrain(new Forest(), 0, 2);
+        board.setTerrain(new Forest(), 1, 0);
+        board.setTerrain(new Forest(), 1, 1);
+        board.setTerrain(new Forest(), 1, 2);
+        board.setTerrain(new Forest(), 2, 0);
+        board.setTerrain(new Forest(), 2, 1);
+        board.setTerrain(new Forest(), 2, 2);
+
         board.placePiece(mock, 1, 1);
 
         Set<Coordinate> possibleMoves = board.getPossibleMoves(pieceName);
-        assertEquals(9, possibleMoves.size());
+        assertEquals(5, possibleMoves.size());
 
         assertTrue(possibleMoves.contains(new Coordinate(0,1)));
-        assertTrue(possibleMoves.contains(new Coordinate(1,0)));
         assertTrue(possibleMoves.contains(new Coordinate(1,0)));
         assertTrue(possibleMoves.contains(new Coordinate(1,1)));
         assertTrue(possibleMoves.contains(new Coordinate(1,2)));
         assertTrue(possibleMoves.contains(new Coordinate(2,1)));
 
         // The corners of the board that are unreachable in just one move
-        assertTrue(possibleMoves.contains(new Coordinate(0,0)));
-        assertTrue(possibleMoves.contains(new Coordinate(0,2)));
-        assertTrue(possibleMoves.contains(new Coordinate(2,0)));
-        assertTrue(possibleMoves.contains(new Coordinate(2,2)));
+        assertFalse(possibleMoves.contains(new Coordinate(0,0)));
+        assertFalse(possibleMoves.contains(new Coordinate(0,2)));
+        assertFalse(possibleMoves.contains(new Coordinate(2,0)));
+        assertFalse(possibleMoves.contains(new Coordinate(2,2)));
+    }
+
+    /**
+     *  _ F _
+     *  F M F
+     *  _ F _
+     *
+     *  M = mock piece (on Plains terrain, no move penalty)
+     *  F = plains terrain (1 move penalty)
+     *
+     *  2 move spaces allowed. Piece should only be allowed to move onto the forests
+     *  directly north, south, east, and west, or to stay on current spot. It should
+     *  not be able to move to the corners even though they are empty terrain, because
+     *  all moves should have been used to get onto the forests
+     *
+     * @throws BoardStateException
+     */
+    @Test
+    public void getPossibleMovesTest_Forest_Surround_2Moves() throws BoardStateException
+    {
+        String pieceName = "mock";
+        MockPiece mock = new MockPiece();
+        mock.setName(pieceName);
+        mock.setMove(2);
+
+        // Set up terrain
+        board.setTerrain(new Forest(), 0, 1);
+        board.setTerrain(new Forest(), 1, 0);
+        board.setTerrain(new Forest(), 1, 1);
+        board.setTerrain(new Forest(), 1, 2);
+        board.setTerrain(new Forest(), 2, 1);
+
+        board.placePiece(mock, 1, 1);
+
+        Set<Coordinate> possibleMoves = board.getPossibleMoves(pieceName);
+        assertEquals(5, possibleMoves.size());
+
+        assertTrue(possibleMoves.contains(new Coordinate(0,1)));
+        assertTrue(possibleMoves.contains(new Coordinate(1,0)));
+        assertTrue(possibleMoves.contains(new Coordinate(1,1)));
+        assertTrue(possibleMoves.contains(new Coordinate(1,2)));
+        assertTrue(possibleMoves.contains(new Coordinate(2,1)));
+
+        // The corners of the board that are unreachable in just one move
+        assertFalse(possibleMoves.contains(new Coordinate(0,0)));
+        assertFalse(possibleMoves.contains(new Coordinate(0,2)));
+        assertFalse(possibleMoves.contains(new Coordinate(2,0)));
+        assertFalse(possibleMoves.contains(new Coordinate(2,2)));
     }
 }
