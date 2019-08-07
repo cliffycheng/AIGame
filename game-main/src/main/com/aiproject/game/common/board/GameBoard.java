@@ -192,7 +192,11 @@ public class GameBoard
                              int numMoves,
                              Coordinate futureCoor)
     {
-        // If we know this coordinate has been visited before, then don't bother
+        // If we know this coordinate has been visited before, then don't
+        // TODO: Bug: Can end up causing some coordinates to be not included by not allowing
+        //       processing of spaces that still have moves left. Should probably do breadth-first rather than depth first,
+        //       or if want to implement mines etc in the future, just do depth-first without any kind of shortcuts, and
+        //       store possible paths instead of possible end nodes
         if (possibleMoves.contains(futureCoor))
         {
             return;

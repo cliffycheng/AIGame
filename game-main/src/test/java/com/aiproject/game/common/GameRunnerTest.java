@@ -1,3 +1,5 @@
+package com.aiproject.game.common;
+
 import com.aiproject.game.common.board.GameBoard;
 import org.junit.Before;
 import org.junit.Test;
